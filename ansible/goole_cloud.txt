@@ -1,0 +1,1 @@
+https://www.arctiq.ca/our-blog/2019/4/6/ansible-terraform-gcp-automation-goodness/

@@ -1,0 +1,102 @@
+https://www.techrunnr.com/setup-ansible-role-for-mongodb-server/
+
+mongodbserver/handlers/main.yml
+
+- name: start
+  service: name=mongod state=restarted
+
+mongodbserver/tasks/main.yml
+
+
+- include_tasks: debian.yml
+  when: ansible_os_family == 'Debian'
+- include_tasks: centos.yml
+  when: ansible_os_family == 'RedHat'
+
+=============
+
+Create task file for centos mongodbserver/tasks/centos.yml
+
+---
+# tasks file for mongocentos
+ - name: Copy mongodb repository 
+   copy: src=files/mongodb-org-3.6.repo dest=/etc/yum.repos.d/mongodb-org-3.6.repo
+ - name: Install mongodb
+   yum: name=mongodb-org state=latest
+ - name: remove mongod default a file
+   file:
+     path: /etc/mongod.conf
+     state: absent
+ - name: mongod conf copy
+   template:
+    src: mongodc.j2
+    dest: /etc/mongod.conf
+   notify:
+   - start
+
+
+=============
+mongodb.yml
+
+---
+ - hosts: local
+   gather_facts: true
+   become: true
+   become_user: root
+   become_method: sudo
+   roles:
+    - mongodbserver
+
+For centos mongodbserver/templates/mongodc.j2
+
+# mongod.conf
+
+# for documentation of all options, see:
+#   http://docs.mongodb.org/manual/reference/configuration-options/
+
+# where to write logging data.
+systemLog:
+  destination: file
+  logAppend: true
+  path: /var/log/mongodb/mongod.log
+
+# Where and how to store data.
+storage:
+  dbPath: /var/lib/mongo
+  journal:
+    enabled: true
+#  engine:
+#  mmapv1:
+#  wiredTiger:
+
+# how the process runs
+processManagement:
+  fork: true  # fork and run in background
+  pidFilePath: /var/run/mongodb/mongod.pid  # location of pidfile
+  timeZoneInfo: /usr/share/zoneinfo
+
+# network interfaces
+net:
+  port: 27017
+  bindIp: {{ bind }}  # Listen to local interface only, comment to listen on all interfaces.
+
+
+#security:
+
+#operationProfiling:
+
+#replication:
+
+#sharding:
+
+## Enterprise-Only Options
+
+#auditLog:
+
+#snmp:
+
+mongodbserver/vars/main.yml
+
+---
+# vars file for mongodbserver
+bind: 0.0.0.0

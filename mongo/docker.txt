@@ -1,0 +1,146 @@
+https://hub.docker.com/_/mongo
+
+
+docker pull mongo
+
+Start a mongo server instance
+
+$ docker run --name some-mongo -d mongo:tag
+... where some-mongo is the name you want to assign to your container and tag is the tag specifying the MongoDB version you want. See the list above for relevant tags.
+
+
+Using a custom MongoDB configuration file
+
+docker run --name some-mongo -v /my/custom:/etc/mongo -d mongo --config /etc/mongo/mongod.conf
+
+docker run -d --network some-network --name some-mongo \
+    -e MONGO_INITDB_ROOT_USERNAME=mongoadmin \
+    -e MONGO_INITDB_ROOT_PASSWORD=secret \
+    mongo
+
+
+docker run --name some-mongo -v /my/own/datadir:/data/db -d mongo
+
+=========
+
+Windows containers don't have the same licensing requirements as servers or VMs running Windows. 
+
+Windows is licensed at the host level, not the container level. If you have 100 Windows containers running on one server, 
+you only need one license for the server. 
+
+Windows Server license includes the Docker Enterprise Engine, which gives you support to run applications in containers. 
+If you have problems with a container or with the Docker service you can raise it with Microsoft, and they can go on to escalate it to Docker's engineers.
+
+======
+Docker Swarm
+Docker has the ability to run on a single machine or as one node in a cluster of machines all running Docker. This cluster is called a Swarm, and you don't need to install anything extra to run in swarm mode. 
+You install Docker on a set of machines –  on the first, you run docker swarm init to initialize the swarm, and on the others you run docker swarm join to join the swarm.
+
+Docker is written in Go, which is a cross-platform language, and only a minority of code is specific to Windows
+
+Docker has always been backward-compatible,
+
+===========
+
+When Docker is running, you will see a whale icon in the notification bar, which you can right-click on for options:
+
+You need to select Switch to Windows containers... before you do anything else.
+
+docker version
+
+==============
+
+PowerShell commands to install the Docker Engine and Docker CLI:
+
+Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
+Install-Package -Name docker -ProviderName DockerMsftProvider
+
+Restart-Computer -Force
+
+When the server is online, confirm that Docker is running with docker version,
+, and then run a container from the sample image for this chapter:
+
+docker container run dockeronwindows/ch01-whale:2e
+
+You can update your server when a new version of Docker Engine is released by repeating the Install command, and adding the -Update flag:
+
+Install-Package -Name docker -ProviderName DockerMsftProvider -Update
+
+========
+
+https://github.com/sixeyed/docker-on-windows/tree/second-edition/ch02
+
+docker container run dockeronwindows/ch02-powershell-env:2e
+
+This a task container because the container performs one task and then exits.
+
+#To list all active container
+docker container ls
+docker container ls --all
+
+Task containers are very useful in automating repetitive tasks, like running scripts to set up an environment, backing up data, or collecting log files
+
+=========
+
+Connecting to an interactive container
+
+> docker container run --interactive --tty dockeronwindows/ch02-powershell-env:2e `
+    powershell
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\> Write-Output 'This is an interactive container'
+This is an interactive container
+PS C:\> exit
+
+=======
+
+Keeping a process running in a background container
+
+The last type of container is the one that you'll use most in production, the background container, which keeps a long-running process running in the background. It's a container that behaves like a Windows service. In Docker terminology, it's called a detached container, and it's the Docker Engine that keeps it running in the background. Inside the container, the process runs in the foreground. 
+The process might be a web server or a console application polling a message queue for work, but as long as the process keeps running, Docker will keep the container alive.
+
+> docker container run --detach dockeronwindows/ch02-powershell-env:2e `
+ powershell Test-Connection 'localhost' -Count 100
+
+bb326e5796bf48199a9a6c4569140e9ca989d7d8f77988de7a96ce0a616c88e9
+
+=============
+
+Building a Docker image
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+COPY scripts/print-env-details.ps1 C:\\print-env.ps1
+CMD ["powershell.exe", "C:\\print-env.ps1"]
+
+By convention the instructions (FROM, COPY, and CMD) are uppercase and the arguments are lowercase, but this is not mandatory
+
+Also by convention, you save the text in a file called Dockerfile
+
+The 2019 release of the Windows Server Core image is called windows/servercore:ltsc2019
+
+Microsoft Container Registry (MCR)
+Docker Hub is where all the Microsoft images are listed for discovery, as MCR doesn't have a web UI. Even if images are hosted on MCR, 
+they will be listed on Docker Hub, so that's the place to go when you're looking for images.
+
+write C:\print.ps1 as C:\\print.ps1 or C:/print.ps1
+
+=========
+
+To build an image, open a command line and navigate to the directory where your Dockerfile is. Then, run "docker image build" and give your image a tag, which is the name that will identify the image:
+
+docker image build --tag dockeronwindows/ch02-powershell-env:2e .
+
+Every image needs a tag, specified with the --tag option, which is a unique identifier for the image in your local image cache and in image registries
+
+he convention is to name your repository as your username for the registry, followed by the application name: {user}/{app}
+
+==========
+
+Compiling with multi-stage builds
+
+
+
+
+

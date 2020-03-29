@@ -1,0 +1,16 @@
+https://docs.ansible.com/ansible/latest/scenario_guides/vmware_scenarios/vmware_requirements.html
+
+- Deploy a virtual machine from a template
+- Rename an existing virtual machine
+- Remove an existing VMware virtual machine
+- Find folder path of an existing VMware virtual machine
+- Using VMware HTTP API using Ansible
+  - utilize Ansible to use VMware HTTP APIs to automate various tasks
+  - https://code.vmware.com/apis/366/vsphere-automation
+	
+
+Deploy a virtual machine from a template
+https://docs.ansible.com/ansible/latest/scenario_guides/vmware_scenarios/scenario_clone_template.html
+
+Since Ansible utilizes the VMware API to perform actions, in this use case we will be connecting directly to the API from our localhost. This means that our playbooks will not be running from the vCenter or ESXi Server. We do not necessarily need to collect facts about our localhost, so the gather_facts parameter will be disabled. You can run these modules against another server that would then connect to the API if your localhost does not have access to vCenter. 
+If so, the required Python modules will need to be installed on that target server.

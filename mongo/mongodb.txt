@@ -1,0 +1,16 @@
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows-unattended/
+
+For example, to install just the MongoDB server (mongod.exe) and the mongo.exe shell as well as set up the MongoDB server as a Windows service, run:
+
+msiexec.exe /l*v mdbinstall.log  /qb /i mongodb-win32-x86_64-2012plus-4.2.3-signed.msi ^
+ADDLOCAL="ServerService,Client" ^
+SHOULD_INSTALL_COMPASS="0"
+
+
+To include Compass in the installs, remove SHOULD_INSTALL_COMPASS="0"
+
+
+C:\Users\Administrator>netstat -ano | findstr /c:27017
+  TCP    127.0.0.1:27017        0.0.0.0:0              LISTENING       5004
+
+

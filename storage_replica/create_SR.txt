@@ -1,0 +1,139 @@
+On DC, grant a domain user local DC administration but domain admins
+
+net localgroup administrators mydomain.local\user1 /add
+
+=========
+https://robertsmit.wordpress.com/2013/10/02/deploy-an-active-directory-detached-cluster-or-dns-cluster-or-non-domain-joined-windows-server-2012r2-cluster-one-way-ticket-winserv/
+
+The benefit of this new feature is that it is possible to create failover clusters without requiring the permission to create computer objects within AD DS. Microsoft recommends not using Active Directory-detached clusters in scenarios that require Kerberos authentication. This cluster type can also only be deployed using Windows PowerShell.
+
+========
+https://docs.microsoft.com/en-us/windows-server/storage/storage-replica/storage-replica-overview
+
+Storage Replica also supports asynchronous replication for longer ranges and higher latency networks. Because it is not checkpoint-based, and instead continuously replicates,
+
+Thin provisioning. Support for thin provisioning in Storage Spaces and SAN devices is supported, in order to provide near-instantaneous initial replication times under many circumstances.
+
+**************************************************************************************
+*** Storage Replica utilizes Kerberos AES256 for all authentication between nodes. ***
+**************************************************************************************
+
+=========
+Create data and log disks
+
+Thick Provision Eager Zeroed
+
+A  type of thick virtual disk that supports clustering features such as  Fault Tolerance. Space required for the virtual disk is allocated at  creation time. In contrast to the flat format, the data remaining on the  physical device is zeroed out when the virtual 
+
+torage Replica utilizes Kerberos AES256 for all authentication between nodes.
+============
+
+https://robertsmit.wordpress.com/2018/10/30/step-by-step-server-to-server-storage-replication-with-windows-server-2019-storage-replica-windowsadmincenter-storagereplica-windowsserver2019-refs-sr-azure/
+
+Test-SRTopology -SourceComputerName "bitbucketfs2.ent.local" -SourceVolumeName "e:" -SourceLogVolumeName "f:" -DestinationComputerName "bitbucketfs2a.ent.local" -DestinationVolumeName "e:" -DestinationLogVolumeName "f:" -DurationInMinutes 30 -ResultPath c:\Temp
+
+login with a domain ID, from SR source server PS session:
+=================================
+New-SRPartnership -SourceComputerName "bitbucketfs2.ent.local" –SourceRGName rg01 -SourceVolumeName "e:" -SourceLogVolumeName "f:" -DestinationComputerName "bitbucketfs2a.ent.local" –DestinationRGName rg02 -DestinationVolumeName "e:" -DestinationLogVolumeName "f:"
+
+
+DestinationComputerName : BITBUCKETFS2A
+DestinationRGName       : rg02
+Id                      : 104956a2-24c9-4c5e-bd19-f8919d555207
+SourceComputerName      : BITBUCKETFS2
+SourceRGName            : rg01
+PSComputerName          :
+
+New-SRPartnership : Unable to synchronize replication group rg02, detailed reason: Cannot update state for replication
+group rg02 in the Storage Replica driver.
+At line:1 char:1
++ New-SRPartnership -SourceComputerName "bitbucketfs2.ent.local" –Sourc ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (MSFT_WvrAdminTasks:root/Microsoft/...T_WvrAdminTasks) [New-SRPartnership]
+   , CimException
+    + FullyQualifiedErrorId : Windows System Error 1395,New-SRPartnership
+
+======
+
+https://social.technet.microsoft.com/Forums/en-US/eeadb2b4-4ba7-4a44-8235-f9d10c02aa4a/storage-replica-unable-to-sincronize-replication-group-quotcannot-update-state-for-replication?forum=WinServerPreview
+
+Now the replica is working well, I had to delete content from registry 
+
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WVR\ConfigStore\ 
+
+in SourceServer and DestinationServer
+
+=========
+
+https://social.technet.microsoft.com/Forums/en-US/7f5848e0-5f28-46a8-aec9-ad3b236661f0/creates-a-replication-but-this-error-occurs-storage-replica-windows-server-2019-standard?forum=winserverClustering
+
+
+=========
+
+Using Windows Admin Center to SR group
+
+Message
+Error: Replication groups rg01 and rg02 do not match. Possible reasons: 
+- log size in those two groups are different. 
+- data partition sizes are different in those two groups. 
+- data partition physical sector size are different in those two groups. 
+- log partition logical sector size are different in those two groups. 
+- write consistency setting are different in those two groups. 
+
+===========
+
+Get-SRPartnership
+
+
+(Get-SRGroup).replicas
+
+
+From replica source server:
+===========================
+Get-WinEvent -ProviderName Microsoft-Windows-StorageReplica -max 20
+
+   ProviderName: Microsoft-Windows-StorageReplica
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+3/28/2020 12:35:22 PM         5015 Information      Successfully established a connection to a partner replica....
+3/28/2020 12:35:22 PM         5002 Information      Source entered ready state....
+3/28/2020 12:35:22 PM         5004 Information      Source entered wait-for-quorum state....
+3/28/2020 12:35:22 PM         1237 Information      Block copy is in progress....
+3/28/2020 12:35:22 PM         1201 Information      Source completed preparing for replication....
+3/28/2020 12:35:22 PM         5001 Information      Entered preparation state....
+3/28/2020 12:35:22 PM         2231 Information      Replication group is online....
+3/28/2020 12:35:22 PM         2200 Information      Start replication for replica....
+3/28/2020 12:35:22 PM         9004 Warning          Resetting the recovery bitmap....
+3/28/2020 12:35:22 PM         9007 Information      The disk is not thinly-provisioned....
+
+
+From replica dest server:
+==========================
+
+Get-WinEvent -ProviderName Microsoft-Windows-StorageReplica -max 20
+
+   ProviderName: Microsoft-Windows-StorageReplica
+
+TimeCreated                     Id LevelDisplayName Message
+-----------                     -- ---------------- -------
+3/28/2020 3:35:48 PM          5020 Information      Destination entered synchronous replication state....
+3/28/2020 3:35:48 PM          5009 Information      Destination attempted to enter synchronous replication state....
+3/28/2020 3:35:48 PM          1237 Information      Block copy is in progress....
+3/28/2020 3:35:48 PM          1201 Information      Source completed preparing for replication....
+3/28/2020 3:35:48 PM          1204 Information      Destination started to copy records from the source log....
+3/28/2020 3:35:48 PM          1215 Information      Block copy completed for replica....
+3/28/2020 3:35:48 PM          1242 Information      Initial sync block copy completed....
+3/28/2020 3:35:47 PM          1237 Information      Block copy is in progress....
+3/28/2020 3:35:42 PM          1237 Information      Block copy is in progress....
+3/28/2020 3:35:37 PM          1237 Information      Block copy is in progress....
+3/28/2020 3:35:32 PM          1237 Information      Block copy is in progress....
+3/28/2020 3:35:27 PM          1237 Information      Block copy is in progress....
+3/28/2020 3:35:22 PM          1205 Information      Destination started to copy data blocks from the source....
+3/28/2020 3:35:22 PM          1200 Information      Preparing destination for synchronization with source....
+3/28/2020 3:35:22 PM          5001 Information      Entered preparation state....
+3/28/2020 3:35:22 PM          1235 Information      Destination successfully completed checkpoint exchange with sour...
+3/28/2020 3:35:22 PM          5015 Information      Successfully established a connection to a partner replica....
+3/28/2020 3:35:22 PM          5005 Information      Destination entered stand-by state....
+3/28/2020 3:35:22 PM          2231 Information      Replication group is online....
+3/28/2020 3:35:22 PM          2200 Information      Start replication for replica....
